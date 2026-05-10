@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, maximum-scale=1.0, minimum-scale=1.0">
+    <title>شيزة مطروح | النسخة المطورة</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@300;500;800&family=Reem+Kufi:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37; --gold-light: #f0d060; --sand: #edc9af;
+            --dark: #0d0704; --blue-glow: #00d9ff; --red-glow: #ff3d3d;
+            --emerald: #10b981; --panel-bg: rgba(26, 15, 10, 0.85);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body {
+            background: #0d0704; font-family: 'Tajawal', 'Segoe UI', sans-serif;
+            height: 100vh; height: 100dvh; width: 100vw; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--sand); position: relative;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+                        radial-gradient(ellipse at 20% 80%, rgba(255, 107, 53, 0.08) 0%, transparent 40%),
+                        radial-gradient(ellipse at 80% 60%, rgba(0, 217, 255, 0.06) 0%, transparent 40%);
+            animation: ambientGlow 8s ease-in-out infinite alternate;
+        }
+        @keyframes ambientGlow { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        #app {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            max-width: 550px; margin: 0 auto; position: relative; z-index: 1;
+            box-shadow: 0 0 150px rgba(212, 175, 55, 0.4), 0 0 350px rgba(212, 175, 55, 0.2);
+            border-radius: 16px; overflow: hidden; background: rgba(13, 7, 4, 0.3);
+        }
+        .header {
+            background: linear-gradient(180deg, #3d2010 0%, #2a1810 40%, #1a0f0a 100%);
+            padding: 6px 10px; text-align: center; border-bottom: 2px solid var(--gold);
+            display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-shrink: 0;
+        }
+        .header h1 {
+            font-family: 'Amiri', 'Reem Kufi', serif; font-size: 1.7rem; font-weight: 700;
+            color: var(--gold); letter-spacing: 2px; flex: 1; text-align: center;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+        .tg-link-header {
+            display: flex; align-items: center; gap: 4px; background: rgba(212, 175, 55, 0.2);
+            padding: 4px 10px; border-radius: 24px; border: 1px solid rgba(212, 175, 55, 0.5);
+            cursor: pointer; font-size: 0.65rem; color: var(--gold-light); text-decoration: none;
+            white-space: nowrap; transition: all 0.3s; flex-shrink: 0; backdrop-filter: blur(5px);
+        }
+        .tg-link-header:hover { background: rgba(212, 175, 55, 0.4); box-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+        .tg-link-header svg { width: 18px; height: 18px; fill: var(--gold-light); }
+        .wisdom-bar {
+            background: rgba(0, 0, 0, 0.85); padding: 6px 12px; text-align: center;
+            font-size: 0.78rem; color: #f7d774; border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            font-family: 'Amiri', 'Tajawal', serif; flex-shrink: 0; animation: wisdomFade 6s ease-in-out infinite;
+        }
+        @keyframes wisdomFade { 0%,100% { opacity: 0.8; } 50% { opacity: 1; } }
+        .board-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; padding: 4px; overflow: hidden; min-height: 0; position: relative; }
+        .board {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;
+            background: #3d2b1f; padding: 8px; border-radius: 18px;
+            width: 100%; max-width: 95vmin; aspect-ratio: 1 / 1;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.95), 0 0 60px rgba(212, 175, 55, 0.3), inset 0 0 30px rgba(0,0,0,0.5);
+            border: 4px solid #2a1810; margin: auto; transition: all 0.3s;
+        }
+        .cell {
+            background: radial-gradient(circle at 30% 35%, #f5e6d3, #a67c5b);
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; aspect-ratio: 1 / 1; transition: 0.15s;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.4), 0 4px 8px rgba(0,0,0,0.6); position: relative;
+        }
+        .cell:active { transform: scale(0.92); }
+        .cell.center-cell {
+            background: radial-gradient(circle at 30% 35%, #ffe8b0, #c9a050);
+            box-shadow: inset 0 0 12px rgba(212, 175, 55, 0.8), 0 0 15px #b8860b, 0 0 30px rgba(212,175,55,0.3);
+        }
+        .piece {
+            width: 75%; height: 75%; border-radius: 50%;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.85), inset 0 -4px 8px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.1);
+            border: 3px solid rgba(255,255,255,0.35); transition: 0.2s; position: relative;
+        }
+        .piece::after { content: ''; position: absolute; top: 15%; left: 20%; width: 30%; height: 20%; background: rgba(255,255,255,0.4); border-radius: 50%; transform: rotate(-30deg); }
+        .piece.blue { background: radial-gradient(circle at 35% 35%, #4de8ff, #00b8d4 50%, #005566); box-shadow: 0 0 12px rgba(0,217,255,0.5), 0 8px 16px rgba(0,0,0,0.85); }
+        .piece.red { background: radial-gradient(circle at 35% 35%, #ff6b6b, #e63946 50%, #660000); box-shadow: 0 0 12px rgba(255,61,61,0.5), 0 8px 16px rgba(0,0,0,0.85); }
+        .cell.selected { box-shadow: 0 0 0 5px white, 0 0 30px gold, 0 0 50px rgba(255,215,0,0.6); z-index: 5; transform: scale(1.08); }
+        .cell.legal-move { box-shadow: inset 0 0 12px 4px #4caf50, 0 0 14px rgba(76,175,80,0.5); animation: legalPulse 0.8s infinite alternate; }
+        @keyframes legalPulse { from { box-shadow: inset 0 0 8px #4caf50, 0 0 10px rgba(76,175,80,0.3); } to { box-shadow: inset 0 0 16px #66bb6a, 0 0 20px rgba(76,175,80,0.6); } }
+        .cell.capture-move { box-shadow: inset 0 0 14px 5px #ff5252, 0 0 18px rgba(255,82,82,0.6); animation: capturePulse 0.7s infinite; }
+        @keyframes capturePulse { 0% { box-shadow: inset 0 0 8px #ff5252; } 50% { box-shadow: inset 0 0 24px #ff1744; } }
+        .cell.capture-ready { animation: captureReadyGlow 0.6s infinite alternate; }
+        @keyframes captureReadyGlow { from { box-shadow: 0 0 12px #ffd700, 0 0 25px #ffd700; } to { box-shadow: 0 0 22px #ffaa00, 0 0 40px #ffaa00; } }
+        .cell.naham-forced { animation: nahamGlow 0.5s infinite alternate; border: 2px solid #ff1744; }
+        @keyframes nahamGlow { from { box-shadow: 0 0 8px #ff1744; } to { box-shadow: 0 0 18px #ff5252; } }
+        .cell.threatened { animation: threatGlow 1s infinite alternate; }
+        @keyframes threatGlow {
+            from { box-shadow: inset 0 0 10px #ff4500, 0 0 12px #ff4500; }
+            to { box-shadow: inset 0 0 20px #ff0000, 0 0 24px #ff0000; }
+        }
+        .chain-highlight { box-shadow: 0 0 0 5px #ff1744, 0 0 30px #ff1744, 0 0 50px rgba(255,23,68,0.7); }
+        .board.shaking { animation: boardShake 0.35s ease-out; }
+        @keyframes boardShake { 0%,100% { transform: translate(0,0); } 25% { transform: translate(-3px,0); } 50% { transform: translate(3px,0); } 75% { transform: translate(-1px,0); } }
+        .ransom-highlight { box-shadow: 0 0 20px 4px #fbbf24, inset 0 0 12px #f59e0b; animation: ransomGlow 0.5s infinite alternate; }
+        @keyframes ransomGlow { from { box-shadow: 0 0 10px #fbbf24; } to { box-shadow: 0 0 25px #f59e0b; } }
+        button {
+            background: linear-gradient(180deg, var(--gold), #b8860b); color: #1a0f0a;
+            border: none; padding: 8px 14px; border-radius: 24px; font-weight: 800;
+            box-shadow: 0 4px 0 #7b5d07; cursor: pointer; transition: 0.15s;
+            font-family: 'Tajawal', sans-serif; letter-spacing: 0.5px; position: relative;
+        }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 #7b5d07; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(40%); }
+        .ransom-btn { background: linear-gradient(180deg, #ff5252, #c62828); color: white; animation: shake 0.9s infinite; }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-5px); } 30% { transform: translateX(5px); } 45% { transform: translateX(-3px); } 60% { transform: translateX(3px); } 75% { transform: translateX(-1px); } 90% { transform: translateX(1px); } }
+        .control-bar { display: flex; gap: 5px; justify-content: center; padding: 8px; background: #1a0f0a; border-top: 2px solid var(--gold); flex-wrap: wrap; flex-shrink: 0; position: relative; }
+        .toast {
+            position: fixed; top: 12%; left: 50%; transform: translateX(-50%);
+            background: rgba(26,15,10,0.97); color: var(--gold); padding: 12px 30px;
+            border-radius: 30px; font-weight: bold; z-index: 2000; border: 1px solid var(--gold);
+            animation: toastInOut 2.8s forwards; pointer-events: none; font-size: 0.9rem;
+            text-align: center; box-shadow: 0 8px 30px rgba(0,0,0,0.8); max-width: 90vw;
+            backdrop-filter: blur(10px); display: flex; align-items: center; gap: 8px;
+        }
+        @keyframes toastInOut { 0% { opacity: 0; top: 20%; } 12% { opacity: 1; top: 12%; } 70% { opacity: 1; } 100% { opacity: 0; top: 5%; } }
+        .winner-modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--panel-bg); border: 3px solid var(--gold); border-radius: 30px;
+            padding: 24px; text-align: center; z-index: 60;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.95), 0 0 60px rgba(212,175,55,0.4);
+            backdrop-filter: blur(20px); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes modalPop { from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        .winner-modal h2 { color: var(--gold); font-family: 'Amiri', serif; font-size: 1.8rem; margin-bottom: 8px; }
+        .confetti-piece { position: absolute; border-radius: 3px; animation: confettiFall linear forwards; pointer-events: none; }
+        @keyframes confettiFall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(105vh) rotate(720deg); opacity: 0; } }
+        .chat-panel, .radio-popup {
+            background: var(--panel-bg); border: 1px solid var(--gold); border-radius: 14px;
+            padding: 8px; z-index: 300; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .chat-panel { position: absolute; bottom: 60px; left: 8px; right: 8px; max-height: 140px; display: flex; flex-direction: column; }
+        .radio-popup { position: absolute; bottom: 60px; right: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: var(--gold-light); padding: 2px 6px; cursor: pointer; }
+        .chat-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .chat-messages { flex: 1; overflow-y: auto; font-size: 0.6rem; color: #f1d48b; margin-bottom: 4px; max-height: 60px; word-break: break-word; padding: 2px; }
+        .chat-input { display: flex; gap: 3px; }
+        .chat-input input { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid var(--gold); color: white; border-radius: 6px; padding: 5px 8px; font-size: 0.6rem; font-family: 'Tajawal', sans-serif; }
+        .chat-input button { background: var(--gold); border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.6rem; box-shadow: none; }
+        .input-field { width: 100%; padding: 12px; margin: 8px 0; border-radius: 24px; background: rgba(0,0,0,0.8); color: white; text-align: center; border: 1px solid var(--gold); font-family: 'Tajawal', sans-serif; backdrop-filter: blur(5px); }
+        .input-field:focus { outline: none; border-color: var(--gold-light); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+        .status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 4px; }
+        .status-online { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .status-offline { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        .turn-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; animation: turnBlink 0.6s infinite; vertical-align: middle; margin: 0 4px; }
+        @keyframes turnBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .score-badge { background: rgba(212,175,55,0.2); border-radius: 12px; padding: 2px 8px; font-size: 0.7rem; }
+        .dev-credit { text-align: center; font-size: 0.55rem; padding: 3px; color: var(--gold); opacity: 0.7; flex-shrink: 0; }
+        .flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,215,0,0.3); z-index: 1500; pointer-events: none; animation: flashOut 0.5s forwards; }
+        @keyframes flashOut { 0% { opacity: 1; } 100% { opacity: 0; } }
+        select.input-field { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%23d4af37'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; padding-left: 30px; cursor: pointer; }
+        .radio-popup button { background: rgba(212, 175, 55, 0.3); border: 1px solid var(--gold); color: var(--gold-light); padding: 4px 8px; border-radius: 8px; font-size: 0.6rem; box-shadow: none; cursor: pointer; }
+        .radio-popup button.active { background: var(--emerald); color: white; }
+        .particle { position: fixed; pointer-events: none; z-index: 1600; border-radius: 50%; animation: particleFly 0.7s ease-out forwards; }
+        @keyframes particleFly { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+        .radio-station-selector { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+        .radio-station-selector span { color: var(--gold-light); font-size: 0.6rem; white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
+        .radio-nav-btn { font-size: 0.55rem; padding: 3px 6px; background: rgba(255,215,0,0.2); border: 1px solid rgba(212,175,55,0.5); color: var(--gold-light); border-radius: 8px; cursor: pointer; }
+        .ransom-reject { background: linear-gradient(180deg, #ff9800, #e65100); color: white; }
+        .bot-thinking { font-size: 0.7rem; color: #ffaa00; padding: 2px 8px; background: rgba(0,0,0,0.7); border-radius: 12px; display: inline-block; }
+        .placing-counter { font-weight: bold; color: #ffd966; margin: 0 4px; }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ==================== الدوال المساعدة العامة ====================
+    const S = (str) => str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+    const TOTAL = 49, CENTER = 24;
+    const getIdx = (r,c) => r*7+c, getRC = i => ({ r: Math.floor(i/7), c: i%7 });
+    const getNeighbors = i => { const {r,c} = getRC(i), n = []; if (r>0) n.push(getIdx(r-1,c)); if (r<6) n.push(getIdx(r+1,c)); if (c>0) n.push(getIdx(r,c-1)); if (c<6) n.push(getIdx(r,c+1)); return n; };
+
+    // ==================== 1. مدير الصوت الشرقي ====================
+    const AudioManager = (() => {
+      let audioCtx = null;
+      function getCtx() {
+        if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        return audioCtx;
+      }
+      function playOrientalTone(freq, dur, vol=0.1) {
+        const ctx = getCtx(); if(!ctx) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const vibrato = ctx.createOscillator();
+        const vibratoGain = ctx.createGain();
+        osc.type = 'sine'; vibrato.type = 'sine';
+        vibrato.frequency.value = 5 + Math.random() * 2;
+        vibratoGain.gain.value = 2 + Math.random() * 2;
+        vibrato.connect(vibratoGain); vibratoGain.connect(osc.frequency);
+        vibrato.start(now); vibrato.stop(now + dur);
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(now); osc.stop(now + dur);
+      }
+      return {
+        place: ()=> playOrientalTone(1800, 0.1),
+        move: ()=> playOrientalTone(1200, 0.12),
+        capture: ()=> { playOrientalTone(900,0.1); playOrientalTone(1400,0.1); },
+        chainCap: ()=> { playOrientalTone(800,0.1); playOrientalTone(1100,0.1); playOrientalTone(1500,0.12); },
+        win: ()=> [1200,1400,1600,1800,2000].forEach((f,i)=> setTimeout(()=> playOrientalTone(f,0.12), i*80)),
+        ransom: ()=> { playOrientalTone(400,0.2); playOrientalTone(500,0.15); },
+        error: ()=> playOrientalTone(250,0.12),
+        nahamAlert: ()=> { playOrientalTone(500,0.1); playOrientalTone(700,0.15); }
+      };
+    })();
+
+    // ==================== 2. حالة اللعبة ====================
+    const GameState = {
+      screen: 'start', room: '', myColor: 'blue',
+      board: Array(49).fill(null), phase: 'placing', turn: 'blue',
+      inHand: { blue: 24, red: 24 }, placCount: 0,
+      selected: null, chain: null, winner: null,
+      players: { blue: 'فارس الصحراء', red: 'الذيب المطروحي' },
+      chat: [], ransom: null, startFirst: 'blue',
+      community: false, listenOnly: false,
+      wins: { blue: 0, red: 0 }, lastWinnerNotified: null,
+      currentWisdom: '', nahamActive: true,
+      chatMinimized: true, radioPanelVisible: false, connected: false,
+      ransomRejectCount: 0
+    };
+
+    const allWisdom = [
+      "📜 «إنما الأعمال بالنيات» - متفق عليه", "🕌 «من حسن إسلام المرء تركه ما لا يعنيه» - رواه الترمذي",
+      "💎 «الكلمة الطيبة صدقة» - متفق عليه", "🌙 «اتق الله حيثما كنت» - رواه الترمذي",
+      "⭐ «أحب الأعمال إلى الله أدومها وإن قل» - متفق عليه", "🕋 «إن الله مع الصابرين» - سورة البقرة 153",
+      "🤲 «الدعاء هو العبادة» - رواه الترمذي", "💚 «لا يؤمن أحدكم حتى يحب لأخيه ما يحب لنفسه» - متفق عليه",
+      "🌿 «المسلم من سلم المسلمون من لسانه ويده» - متفق عليه", "🏆 «خيركم من تعلم القرآن وعلمه» - رواه البخاري",
+      "🌟 «إن الله جميل يحب الجمال» - رواه مسلم", "🕊️ «المؤمن مرآة المؤمن» - رواه أبو داود",
+      "🌺 «الحياء لا يأتي إلا بخير» - متفق عليه", "📖 «تركت فيكم ما إن تمسكتم به لن تضلوا: كتاب الله وسنتي» - رواه الحاكم",
+      "💫 «اتق المحارم تكن أعبد الناس» - رواه الترمذي", "🌴 «مثل المؤمن كالنخلة، لا يسقط ورقها» - رواه البخاري",
+      "🕌 «ألا أنبئكم بأكبر الكبائر؟ الإشراك بالله وعقوق الوالدين» - متفق عليه", "💝 «الراحمون يرحمهم الرحمن» - رواه الترمذي",
+      "🏹 «المؤمن القوي خير وأحب إلى الله من المؤمن الضعيف» - رواه مسلم", "🌙 «من صام رمضان إيماناً واحتساباً غفر له ما تقدم من ذنبه» - متفق عليه"
+    ];
+
+    // ==================== 3. محرك قواعد اللعبة (بدون تغيير) ====================
+    const GameLogic = {
+      capturesAfter(board, to, team) {
+        const opp = team === 'blue' ? 'red' : 'blue', cap = [], {r,c} = getRC(to);
+        for (const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+          const nr = r+dr, nc = c+dc, fr = r+dr*2, fc = c+dc*2;
+          if (fr>=0 && fr<7 && fc>=0 && fc<7) {
+            const mid = getIdx(nr,nc), far = getIdx(fr,fc);
+            if (board[mid] === opp && board[far] === team) cap.push(mid);
+          }
+        }
+        return cap;
+      },
+      allCapturingMovesForBoard(board, team) {
+        const moves = [];
+        for (let i=0; i<TOTAL; i++) if (board[i] === team)
+          for (const n of getNeighbors(i)) if (board[n] === null) {
+            const nb = [...board]; nb[n] = team; nb[i] = null;
+            if (this.capturesAfter(nb, n, team).length) moves.push({from: i, to: n});
+          }
+        return moves;
+      },
+      piecesWithCaptures(board, team) { return [...new Set(this.allCapturingMovesForBoard(board, team).map(m => m.from))]; },
+      hasAnyMove(board, team) {
+        for (let i=0; i<TOTAL; i++) if (board[i] === team)
+          for (const n of getNeighbors(i)) if (board[n] === null) return true;
+        return false;
+      },
+      threatenedPieces(board, team) {
+        const opp = team === 'blue' ? 'red' : 'blue', caps = this.allCapturingMovesForBoard(board, opp), threatened = new Set();
+        caps.forEach(m => { const nb = [...board]; nb[m.to] = opp; nb[m.from] = null; this.capturesAfter(nb, m.to, opp).forEach(idx => threatened.add(idx)); });
+        return [...threatened].filter(i => board[i] === team);
+      },
+      evaluateBoard(board) {
+        let score = 0;
+        const redP = board.filter(x => x === 'red').length, blueP = board.filter(x => x === 'blue').length;
+        score += (redP - blueP) * 30;
+        for (let i=0; i<TOTAL; i++) {
+          if (board[i] === 'red') {
+            score += 10;
+            if (!this.threatenedPieces(board, 'red').includes(i)) score += 20;
+            const {r} = getRC(i); score += (6 - r) * 2;
+          } else if (board[i] === 'blue') {
+            score -= 10;
+            if (!this.threatenedPieces(board, 'blue').includes(i)) score -= 20;
+            const {r} = getRC(i); score -= r * 2;
+          }
+        }
+        score += this.allCapturingMovesForBoard(board, 'red').length * 35;
+        score -= this.allCapturingMovesForBoard(board, 'blue').length * 40;
+        if (board[CENTER] === 'red') score += 30;
+        else if (board[CENTER] === 'blue') score -= 30;
+        if (!this.hasAnyMove(board, 'blue')) score += 2000;
+        if (!this.hasAnyMove(board, 'red')) score -= 2000;
+        for (let i=0; i<TOTAL; i++) if (board[i] === 'red')
+          for (const n of getNeighbors(i)) if (board[n] === 'red') score += 4;
+        return score;
+      },
+      minimax(board, depth, isMax, alpha, beta, turn) {
+        if (depth === 0) return this.evaluateBoard(board);
+        const team = isMax ? 'red' : 'blue';
+        let moves = this.allCapturingMovesForBoard(board, team);
+        if (!moves.length) {
+          moves = [];
+          for (let i=0; i<TOTAL; i++) if (board[i] === team)
+            for (const n of getNeighbors(i)) if (!board[n]) moves.push({from: i, to: n});
+        }
+        if (!moves.length) return this.evaluateBoard(board);
+        moves.sort(() => Math.random() - 0.5);
+        if (isMax) {
+          let max = -Infinity;
+          for (const m of moves) {
+            const nb = [...board]; nb[m.to] = team; nb[m.from] = null;
+            const vics = this.capturesAfter(nb, m.to, team); vics.forEach(v => nb[v] = null);
+            const nextTurn = this.capturesAfter(nb, m.to, team).length ? turn : (turn === 'blue' ? 'red' : 'blue');
+            const val = this.minimax(nb, depth-1, false, alpha, beta, nextTurn);
+            max = Math.max(max, val); alpha = Math.max(alpha, val);
+            if (beta <= alpha) break;
+          }
+          return max;
+        } else {
+          let min = Infinity;
+          for (const m of moves) {
+            const nb = [...board]; nb[m.to] = team; nb[m.from] = null;
+            const vics = this.capturesAfter(nb, m.to, team); vics.forEach(v => nb[v] = null);
+            const nextTurn = this.capturesAfter(nb, m.to, team).length ? turn : (turn === 'blue' ? 'red' : 'blue');
+            const val = this.minimax(nb, depth-1, true, alpha, beta, nextTurn);
+            min = Math.min(min, val); beta = Math.min(beta, val);
+            if (beta <= alpha) break;
+          }
+          return min;
+        }
+      }
+    };
+
+    // ==================== 4. مدير الأونلاين (بدون تغيير) ====================
+    let supabase = null, supabaseReady = false, channel = null;
+    try { supabase = window.supabase.createClient("https://bwmcqcexxnacqbrtrwjl.supabase.co","sb_publishable_obgV47oBP90q5DLhVLCLEQ_SdDRXHLy"); supabaseReady = true; } catch(e) {}
+
+    function sync() {
+      if (!supabaseReady || !channel || !GameState.room || GameState.myColor === 'spectator') return;
+      const payload = { board: GameState.board, phase: GameState.phase, turn: GameState.turn, inHand: GameState.inHand, placCount: GameState.placCount, selected: GameState.selected, chain: GameState.chain, winner: GameState.winner, players: GameState.players, startFirst: GameState.startFirst, ransom: GameState.ransom, chat: GameState.chat, wins: GameState.wins, nahamActive: GameState.nahamActive, ransomRejectCount: GameState.ransomRejectCount };
+      channel.send({ type: 'broadcast', event: 'sync', payload }).catch(()=>{});
+    }
+    function sanitizeChat(msgs) { return (msgs||[]).map(m => { const i = m.indexOf(']:'); if (i>-1) return `[${S(m.substring(1,i))}]: ${S(m.substring(i+2))}`; return S(m); }); }
+
+    function validateAndApplySync(payload, color) {
+      if (!payload || !Array.isArray(payload.board) || payload.board.length !== TOTAL) return false;
+      if (color === 'blue') return true;
+      let oldPieces = 0, newPieces = 0;
+      for(let i=0; i<TOTAL; i++) {
+        if(GameState.board[i]) oldPieces++;
+        if(payload.board[i]) newPieces++;
+      }
+      if (Math.abs(newPieces - oldPieces) > 2) {
+        console.warn("Anti-tamper: Too many pieces changed.");
+        return false;
+      }
+      return true;
+    }
+
+    function listenRoom(code, color) {
+      if (!supabaseReady) return showToast("السيرفر غير متاح");
+      if (channel) try { channel.unsubscribe(); } catch(e) {}
+      channel = supabase.channel(`room_${code}`, { config: { broadcast: { self: false } } });
+      channel.on('broadcast', { event: 'sync' }, (p) => {
+        if (color === 'blue') return;
+        if (!validateAndApplySync(p.payload, color)) {
+          showToast("⚠️ تم اكتشاف تلاعب! جاري إعادة المزامنة...");
+          channel.send({ type: 'broadcast', event: 'request_sync', payload: {} });
+          return;
+        }
+        if (!p.payload || !Array.isArray(p.payload.board) || p.payload.board.length !== TOTAL) return;
+        const g = p.payload, prev = GameState.winner;
+        GameState.board = g.board; GameState.phase = g.phase; GameState.turn = g.turn; GameState.inHand = g.inHand;
+        GameState.placCount = g.placCount != null ? g.placCount : 0;
+        GameState.selected = g.selected; GameState.chain = g.chain; GameState.winner = g.winner;
+        GameState.players = g.players; GameState.startFirst = g.startFirst; GameState.ransom = g.ransom;
+        GameState.chat = sanitizeChat(g.chat); GameState.wins = g.wins || GameState.wins;
+        GameState.nahamActive = g.nahamActive !== undefined ? g.nahamActive : true;
+        GameState.ransomRejectCount = g.ransomRejectCount || 0;
+        if (GameState.winner && GameState.winner !== prev && GameState.winner !== GameState.lastWinnerNotified) {
+          GameState.lastWinnerNotified = GameState.winner;
+          setTimeout(() => celebrate(GameState.winner), 300);
+        }
+        GameState.connected = true;
+        UI.updateBoard(); UI.updateStatusBar();
+      }).on('broadcast', { event: 'request_sync' }, () => { if (color === 'blue') sync(); })
+      .subscribe(s => {
+        if (s === 'SUBSCRIBED') { GameState.connected = true; if (color === 'red') channel.send({ type: 'broadcast', event: 'request_sync', payload: {} }); UI.render(); }
+        else if (s === 'CLOSED') { GameState.connected = false; showToast("انقطع الاتصال"); UI.render(); }
+      });
+    }
+
+    function createRoom() {
+      GameState.room = Math.random().toString(36).substring(2,6).toUpperCase();
+      GameState.myColor = 'blue'; GameState.screen = 'game'; GameState.connected = true;
+      GameController.resetGame(); GameController.pickNewWisdom();
+      listenRoom(GameState.room, 'blue'); UI.render();
+      showToast(`🏕️ تم إنشاء الميدان: ${GameState.room}`);
+    }
+    function joinRoom() {
+      const code = document.getElementById('joinCode')?.value.toUpperCase();
+      if (!code) return showToast("أدخل رمز الميدان");
+      GameState.room = code; GameState.myColor = 'red'; GameState.screen = 'game';
+      GameState.players.red = S(document.getElementById('joinName')?.value || 'الذيب المطروحي');
+      GameState.connected = true; GameController.resetGame(); GameController.pickNewWisdom();
+      listenRoom(code, 'red'); UI.render(); showToast(`🔑 تم دخول الميدان: ${code}`);
+    }
+    function sendChat() {
+      const inp = document.getElementById('chatInput'); const msg = inp?.value.trim();
+      if (!msg) return;
+      const sender = GameState.myColor === 'blue' ? GameState.players.blue : (GameState.myColor === 'red' ? GameState.players.red : 'جمهور');
+      GameState.chat.push(`[${S(sender)}]: ${S(msg)}`);
+      if (GameState.chat.length > 50) GameState.chat.shift();
+      inp.value = ''; sync(); UI.render();
+    }
+
+    // ==================== 5. مدير واجهة المستخدم (بدون تغيير جوهري) ====================
+    const radioStations = [
+      { name: "أحمد العجمي", url: "https://backup.qurango.net/radio/ahmad_alajmy" },
+      { name: "القرآن الكريم (منوعة)", url: "https://qurango.net/radio/mix" },
+      { name: "عبد الباسط عبد الصمد", url: "https://backup.qurango.net/radio/abdulbasit_abdulsamad" },
+      { name: "سكاي نيوز عربية", url: "https://radio.skynewsarabia.com/stream/radio/skynewsarabia" },
+      { name: "BBC عربي", url: "https://stream.live.vc.bbcmedia.co.uk/bbc_arabic_radio" },
+      { name: "مونت كارلو الدولية", url: "https://montecarlodoualiya128k.ice.infomaniak.ch/mc-doualiya.mp3" }
+    ];
+    let radioStationIndex = 0;
+    let radioAudio = null, radioPlaying = false;
+
+    function changeRadioStation(delta) {
+      radioStationIndex = (radioStationIndex + delta + radioStations.length) % radioStations.length;
+      if (radioPlaying && radioAudio) {
+        radioAudio.src = radioStations[radioStationIndex].url;
+        radioAudio.load();
+        radioAudio.play().catch(() => { showToast('⚠️ تعذر تشغيل المحطة الجديدة'); radioPlaying = false; });
+      }
+      UI.render();
+    }
+
+    function toggleRadio() {
+      if (!radioAudio) {
+        radioAudio = new Audio(); radioAudio.preload = 'none';
+        radioAudio.addEventListener('error', () => { radioPlaying = false; showToast('⚠️ تعذر تشغيل الراديو'); UI.render(); });
+        radioAudio.addEventListener('play', () => { radioPlaying = true; UI.render(); });
+        radioAudio.addEventListener('pause', () => { radioPlaying = false; UI.render(); });
+      }
+      if (radioPlaying) { radioAudio.pause(); radioAudio.src = ''; radioPlaying = false; }
+      else {
+        radioAudio.src = radioStations[radioStationIndex].url;
+        radioAudio.load();
+        radioAudio.play().catch(() => { showToast('⚠️ تعذر تشغيل الراديو'); radioPlaying = false; });
+      }
+      UI.render();
+    }
+
+    function showToast(msg, icon = '📢') {
+      const existing=document.querySelector('.toast'); if(existing)existing.remove();
+      const t=document.createElement('div'); t.className='toast';
+      t.innerHTML = `<span>${icon}</span> ${msg}`;
+      document.body.appendChild(t); setTimeout(()=>t.remove(),2800);
+    }
+    function flash() { const d=document.createElement('div'); d.className='flash-overlay'; document.body.appendChild(d); setTimeout(()=>d.remove(),500); }
+    function shake() { const b=document.querySelector('.board'); if(b){b.classList.add('shaking');setTimeout(()=>b.classList.remove('shaking'),350);} }
+    function celebrate(winner) {
+      const c=document.createElement('div'); c.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1500;';
+      const col=winner==='blue'?'#00d9ff':'#ff3d3d';
+      for(let i=0;i<60;i++){const x=document.createElement('div');x.className='confetti-piece';x.style.left=Math.random()*100+'%';x.style.top=-(Math.random()*30)+'px';x.style.background=i%3===0?'#ffd700':col;x.style.width=(Math.random()*10+6)+'px';x.style.height=(Math.random()*10+6)+'px';x.style.animationDuration=(Math.random()*2+2)+'s';x.style.animationDelay=Math.random()*2+'s';c.appendChild(x);}
+      document.body.appendChild(c); setTimeout(()=>c.remove(),4500);
+    }
+
+    const UI = {
+      spawnParticles(x, y, color) {
+        for(let i=0; i<8; i++) {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = x + 'px'; p.style.top = y + 'px';
+          p.style.background = color;
+          p.style.width = p.style.height = (Math.random() * 8 + 4) + 'px';
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.random() * 40 + 20;
+          p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+          p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+          document.body.appendChild(p);
+          setTimeout(() => p.remove(), 700);
+        }
+      },
+      updateBoard() {
+        const boardEl = document.querySelector('.board');
+        if (!boardEl) return;
+        const threatened = GameState.phase==='battle' && !GameState.winner ? GameLogic.threatenedPieces(GameState.board, GameState.turn) : [];
+        const capturing = GameState.phase==='battle' && !GameState.winner && !GameState.chain ? GameLogic.piecesWithCaptures(GameState.board, GameState.turn) : [];
+        const capMoves = GameState.selected ? GameLogic.allCapturingMovesForBoard(GameState.board, GameState.turn).filter(m => m.from === GameState.selected) : [];
+        const legalMoves = GameState.selected && (capMoves.length===0 || !GameState.nahamActive) ? getNeighbors(GameState.selected).filter(n => !GameState.board[n]) : [];
+        const allLegalMoves = capMoves.length>0 ? capMoves.map(m=>m.to) : legalMoves;
+        const nahamForced = GameState.nahamActive && capturing.length>0 && !GameState.chain ? capturing : [];
+
+        Array.from(boardEl.children).forEach((cellEl, i) => {
+          let cls = ['cell'];
+          if (i===CENTER) cls.push('center-cell');
+          if (GameState.selected===i) cls.push('selected');
+          if (GameState.chain===i) cls.push('chain-highlight');
+          if (threatened.includes(i)) cls.push('threatened');
+          if (nahamForced.includes(i)) cls.push('naham-forced');
+          if (capturing.includes(i) && !nahamForced.includes(i)) cls.push('capture-ready');
+          if (capMoves.some(m=>m.to===i)) cls.push('capture-move');
+          else if (allLegalMoves.includes(i) && !capMoves.some(m=>m.to===i)) cls.push('legal-move');
+          if (GameState.ransom && (GameState.ransom.sacrificePiece===i || GameState.ransom.enemySelected.includes(i))) cls.push('ransom-highlight');
+          cellEl.className = cls.join(' ');
+          cellEl.innerHTML = GameState.board[i] ? `<div class="piece ${GameState.board[i]}"></div>` : '';
+        });
+      },
+      updateStatusBar() {
+        const statusEl = document.getElementById('statusBar');
+        if(!statusEl) return;
+        const roomInfo = GameState.room === 'bluetooth' ? `<span style="color:#1e88e5;">📶 بلوتوث ${GameState.connected ? '(متصل)' : '(بانتظار)'}</span>` : (GameState.room ? `<span style="color:#4ade80;">🏕️ ${S(GameState.room)} <span class="status-indicator ${GameState.connected?'status-online':'status-offline'}"></span></span>` : `<span>🤖 ضد البوت</span>`);
+        const turnDot = GameState.turn==='blue' ? '<span class="turn-indicator" style="color:#00d9ff;background:#00d9ff;"></span>' : '<span class="turn-indicator" style="color:#ff3d3d;background:#ff3d3d;"></span>';
+        let turnDisplay;
+        if (GameState.phase === 'placing') {
+            const placed = GameState.placCount;
+            const remaining = GameState.inHand[GameState.turn];
+            turnDisplay = `<span style="color:var(--gold-light);">📦 ${S(GameState.players[GameState.turn])} يضع قطعتين <span class="placing-counter">(${placed}/2)</span> - متبقي ${remaining}</span>`;
+        } else {
+            turnDisplay = `الدور: ${turnDot} ${S(GameState.players[GameState.turn])}`;
+        }
+        statusEl.innerHTML = `${turnDisplay} <span class="score-badge">⚪ ${GameState.wins.blue} - ${GameState.wins.red} 🔴</span> ${roomInfo} ${GameState.nahamActive?'<span style="font-size:0.6rem;color:#ff9800;">⚡ النهم مفعّل</span>':''}`;
+      },
+      render() {
+        const app = document.getElementById('app');
+        if (GameState.screen === 'start') {
+          const onlineHTML = supabaseReady ? `
+            <h3 style="color:var(--gold-light);margin-top:16px;">🌐 أونلاين</h3>
+            <input class="input-field" id="onlineName" value="فارس الصحراء" placeholder="اسمك">
+            <button id="createRoomBtn" style="width:100%;background:linear-gradient(180deg,#2b8c2b,#1a5c1a);color:white;">🚀 إنشاء ميدان</button>
+            <div style="display:flex;gap:6px;margin:6px 0;"><input class="input-field" id="joinCode" placeholder="رمز الميدان" style="flex:1;margin:0;"><input class="input-field" id="joinName" placeholder="اسم المنافس" value="المنافس" style="flex:1;margin:0;"></div>
+            <button id="joinRoomBtn" style="width:100%;">🔑 دخول للميدان</button>
+            <p style="font-size:0.6rem;color:gray;margin:4px 0;">📋 شارك رمز الميدان مع خصمك ليلعب ضدك</p>
+          ` : `<p style="color:gray;">الأونلاين غير متاح حالياً</p>`;
+
+          // NEW: Bluetooth section
+          const bluetoothHTML = `
+            <h3 style="color:#1e88e5;margin-top:16px;">📶 بلوتوث</h3>
+            <p style="font-size:0.6rem;color:gray;margin:4px 0;">⚡ لعب مباشر بدون إنترنت (قريب المدى)</p>
+            <button id="startBluetoothBtn" style="width:100%;margin:6px 0;background:linear-gradient(180deg,#1e88e5,#0d47a1);color:white;">📶 لعب بالبلوتوث</button>
+          `;
+
+          app.innerHTML = `
+            <div class="start-screen" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:100;">
+              <div class="start-card" style="background:var(--panel-bg);padding:28px;border-radius:36px;border:2px solid var(--gold);text-align:center;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 40px rgba(212,175,55,0.2);backdrop-filter:blur(15px);">
+                <h1 style="color:var(--gold);font-family:'Amiri',serif;font-size:2rem;">🦅 شيزة مطروح</h1>
+                <p style="color:var(--sand);font-size:0.75rem;margin:4px 0;">لعبة الصحراء التقليدية</p>
+                <input id="offName" class="input-field" placeholder="اسمك" value="فارس الصحراء">
+                <input id="offOpp" class="input-field" placeholder="اسم الخصم" value="الذيب المطروحي">
+                <select id="whoStarts" class="input-field"><option value="blue">⚪ أنا أبدأ</option><option value="red">🔴 البوت يبدأ</option></select>
+                <label style="display:flex;align-items:center;gap:8px;color:var(--sand);font-size:0.75rem;margin:4px 0;cursor:pointer;justify-content:center;"><input type="checkbox" id="nahamToggle" checked style="accent-color:var(--gold);"> ⚡ تفعيل النهم (إجبار الأكل)</label>
+                <button id="startOfflineBtn" style="width:100%;margin:6px 0;">⚔️ بدء المعركة</button>
+                <button id="listenOnlyBtn" style="width:100%;background:linear-gradient(180deg,#f59e0b,#b45309);color:white;">🎧 استماع فقط</button>
+                <a href="https://t.me/shizatmtroh" target="_blank" style="display:inline-block;margin-top:8px;color:var(--gold-light);text-decoration:none;font-size:0.8rem;background:rgba(212,175,55,0.15);padding:6px 14px;border-radius:20px;">📱 قناة التلجرام</a>
+                ${bluetoothHTML}
+                ${onlineHTML}
+              </div>
+            </div>`;
+
+          // NEW: Bluetooth button listener
+          document.getElementById('startBluetoothBtn').addEventListener('click', () => {
+            const name1 = S(document.getElementById('offName')?.value || 'فارس الصحراء');
+            const name2 = S(document.getElementById('offOpp')?.value || 'الذيب المطروحي');
+            const isHost = confirm("هل أنت المُضيف؟\n\nاضغط 'موافق' إذا كنت ستنشئ الغرفة (Host).\nاضغط 'إلغاء' إذا كنت ستتصل بمُضيف آخر (Guest).");
+            startBluetoothGame(name1, name2, isHost);
+          });
+
+          // باقي الأزرار (بدون تغيير)
+          document.getElementById('startOfflineBtn').addEventListener('click', () => {
+            GameState.screen = 'game'; GameState.room = ''; GameState.myColor = 'blue'; GameState.listenOnly = false;
+            GameState.nahamActive = document.getElementById('nahamToggle')?.checked ?? true;
+            GameState.players.blue = S(document.getElementById('offName')?.value || 'فارس الصحراء');
+            GameState.players.red = S(document.getElementById('offOpp')?.value || 'الذيب المطروحي');
+            const who = document.getElementById('whoStarts')?.value || 'blue';
+            GameState.startFirst = who;
+            GameController.resetGame();
+            GameState.turn = who;
+            UI.render();
+            if (GameState.turn === 'red') GameController.scheduleBot();
+          });
+          document.getElementById('listenOnlyBtn').addEventListener('click', () => { GameState.screen = 'game'; GameState.listenOnly = true; GameState.myColor = 'spectator'; GameState.nahamActive = true; GameController.resetGame(); UI.render(); });
+          if (supabaseReady) { document.getElementById('createRoomBtn').addEventListener('click', createRoom); document.getElementById('joinRoomBtn').addEventListener('click', joinRoom); }
+        } else {
+          // وضع اللعب (بدون تغيير كبير، مع إضافة إشارة البلوتوث في شريط الحالة)
+          const isSecondPlayer = (GameState.room && GameState.myColor === 'red') || (!GameState.room && GameState.turn === 'red');
+          const canRansom = GameState.phase==='battle' && !GameState.winner && !GameState.listenOnly && !GameState.ransom && !GameState.chain && isSecondPlayer;
+          let boardHtml = '<div class="board" id="gameBoard">';
+          for (let i=0; i<TOTAL; i++) boardHtml += `<div class="cell" data-index="${i}"></div>`;
+          boardHtml += '</div>';
+          const chatPanelHTML = (GameState.room && !GameState.chatMinimized) ? `
+            <div class="chat-panel"><div class="chat-header"><span>💬 محادثة الميدان</span><span style="cursor:pointer;font-size:1rem;" id="minimizeChatBtn">━</span></div><div class="chat-body"><div class="chat-messages">${sanitizeChat(GameState.chat).slice(-10).join('<br>') || '<span style="color:gray;">لا توجد رسائل بعد</span>'}</div><div class="chat-input"><input id="chatInput" placeholder="اكتب رسالة..."><button id="sendChatBtn">➤</button></div></div></div>` : (GameState.room ? `<div style="position:absolute;bottom:60px;left:8px;background:var(--panel-bg);border:1px solid var(--gold);border-radius:20px;padding:4px 12px;cursor:pointer;z-index:300;font-size:0.65rem;color:var(--gold-light);" id="expandChatBtn">💬 محادثة ▲</div>` : '');
+          const radioPopupHTML = GameState.radioPanelVisible ? `
+            <div class="radio-popup" id="radioPopup">
+              <div class="radio-station-selector">
+                <button class="radio-nav-btn" id="prevStationBtn">◀</button>
+                <span title="${radioStations[radioStationIndex].name}">${radioStations[radioStationIndex].name}</span>
+                <button class="radio-nav-btn" id="nextStationBtn">▶</button>
+              </div>
+              <button id="toggleRadioBtn" class="${radioPlaying?'active':''}">${radioPlaying?'⏸️':'▶️'}</button>
+            </div>
+          ` : '';
+          let ransomRejectBtn = '';
+          if (GameState.ransom && GameState.ransom.step === 1 && !GameState.room) {
+            ransomRejectBtn = `<button id="rejectRansomBtn" class="ransom-reject">🚫 رفض الفدية (${GameState.ransomRejectCount}/2)</button>`;
+          }
+          app.innerHTML = `
+            <div class="header">
+              <a href="https://t.me/shizatmtroh" class="tg-link-header" target="_blank"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:var(--gold-light);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.66-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.04-.48-.82-.27-1.47-.42-1.41-.88.03-.24.36-.48.99-.74 3.88-1.69 6.47-2.8 7.77-3.34 3.7-1.54 4.47-1.81 4.97-1.82.11 0 .35.03.51.17.13.12.17.28.19.44.02.16.04.52.02.8z"/></svg></a>
+              <h1>🦅 شيزة مطروح</h1>
+            </div>
+            <div id="wisdomBar" class="wisdom-bar">📿 ${GameState.currentWisdom}</div>
+            <div id="statusBar" style="text-align:center;font-size:0.7rem;padding:4px;color:var(--gold-light);background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;"></div>
+            <div class="board-wrapper">${boardHtml}</div>
+            <div class="control-bar" style="position: relative;">
+              ${GameState.winner ? `<button id="playAgainBtn2">🏆 فاز ${S(GameState.players[GameState.winner])}! جديدة</button>` : ''}
+              <button id="ransomBtn" class="${canRansom?'ransom-btn':''}" ${!canRansom?'disabled':''}>💰 أبو اثنين</button>
+              ${ransomRejectBtn}
+              <button id="resetBtn">🔄 جديدة</button>
+              <button id="backBtn">🏠 رجوع</button>
+              ${GameState.room ? `<button id="toggleChatBtn" style="background:linear-gradient(180deg,#8b5cf6,#6d28d9);color:white;">💬 محادثة</button>` : ''}
+              <button id="toggleNahamBtn" style="font-size:0.65rem;background:${GameState.nahamActive?'linear-gradient(180deg,#ef4444,#b91c1c)':'linear-gradient(180deg,#6b7280,#4b5563)'};color:white;">⚡ النهم: ${GameState.nahamActive?'مفعّل':'معطّل'}</button>
+              <button id="radioPanelBtn" style="font-size:0.65rem;background:linear-gradient(180deg,#2AABEE,#1a7ab5);color:white;">📻 راديو</button>
+              ${radioPopupHTML}
+            </div>
+            <div class="dev-credit">⚡ فتح الله بوبشر القطيفي ⚡ | 📜 الأحاديث من موقع الدرر السنية</div>
+            ${chatPanelHTML}
+          `;
+          UI.updateBoard();
+          UI.updateStatusBar();
+          document.querySelectorAll('.cell').forEach(c => c.addEventListener('click', function(e) { GameController.handleClick(parseInt(this.dataset.index), e.clientX, e.clientY); }));
+          document.getElementById('ransomBtn')?.addEventListener('click', () => { if (canRansom && !GameState.ransom) GameController.initRansom(); });
+          document.getElementById('rejectRansomBtn')?.addEventListener('click', () => GameController.rejectRansom());
+          document.getElementById('resetBtn')?.addEventListener('click', () => { GameController.resetGame(); if (GameState.room !== 'bluetooth') sync(); else sendBluetoothSync(); UI.render(); });
+          document.getElementById('playAgainBtn2')?.addEventListener('click', () => { GameController.resetGame(); if (GameState.room !== 'bluetooth') sync(); else sendBluetoothSync(); UI.render(); });
+          document.getElementById('backBtn')?.addEventListener('click', GameController.backToStart);
+          document.getElementById('toggleNahamBtn')?.addEventListener('click', () => { GameState.nahamActive = !GameState.nahamActive; showToast(GameState.nahamActive?'⚡ النهم مفعّل: إكمال السلسلة إجباري':'🕊️ النهم معطّل: حرية تامة'); if (GameState.room !== 'bluetooth') sync(); else sendBluetoothSync(); UI.render(); });
+          document.getElementById('toggleChatBtn')?.addEventListener('click', () => { GameState.chatMinimized = !GameState.chatMinimized; if (!GameState.chatMinimized) GameState.radioPanelVisible = false; UI.render(); });
+          document.getElementById('minimizeChatBtn')?.addEventListener('click', (e) => { e.stopPropagation(); GameState.chatMinimized = true; UI.render(); });
+          document.getElementById('expandChatBtn')?.addEventListener('click', () => { GameState.chatMinimized = false; GameState.radioPanelVisible = false; UI.render(); });
+          document.getElementById('sendChatBtn')?.addEventListener('click', sendChat);
+          document.getElementById('chatInput')?.addEventListener('keypress', (e) => { if (e.key==='Enter') sendChat(); });
+          document.getElementById('radioPanelBtn')?.addEventListener('click', () => { GameState.radioPanelVisible = !GameState.radioPanelVisible; if (GameState.radioPanelVisible) GameState.chatMinimized = true; UI.render(); });
+          document.getElementById('toggleRadioBtn')?.addEventListener('click', toggleRadio);
+          document.getElementById('prevStationBtn')?.addEventListener('click', () => changeRadioStation(-1));
+          document.getElementById('nextStationBtn')?.addEventListener('click', () => changeRadioStation(1));
+          if (!GameState.winner && GameState.turn==='red' && !GameState.room && !GameState.listenOnly && !GameState.ransom && !GameState.chain) GameController.scheduleBot();
+        }
+      }
+    };
+
+    // ==================== 6. متحكم اللعبة (تعديلات البلوتوث) ====================
+    let botTimer = null, botRunning = false;
+
+    // NEW: إرسال الحالة عبر البلوتوث
+    function sendBluetoothSync() {
+      if (GameState.room === 'bluetooth' && BluetoothManager.connected) {
+        BluetoothManager.send({
+          board: GameState.board,
+          phase: GameState.phase,
+          turn: GameState.turn,
+          inHand: GameState.inHand,
+          placCount: GameState.placCount,
+          selected: GameState.selected,
+          chain: GameState.chain,
+          winner: GameState.winner,
+          players: GameState.players,
+          startFirst: GameState.startFirst,
+          ransom: GameState.ransom,
+          wins: GameState.wins,
+          nahamActive: GameState.nahamActive,
+          ransomRejectCount: GameState.ransomRejectCount
+        });
+      }
+    }
+
+    const GameController = {
+      resetGame() {
+        clearTimeout(botTimer);
+        GameState.board = Array(49).fill(null);
+        GameState.phase = 'placing';
+        GameState.turn = GameState.startFirst;
+        GameState.inHand = { blue: 24, red: 24 };
+        GameState.placCount = 0;
+        GameState.selected = null; GameState.chain = null; GameState.winner = null;
+        GameState.ransom = null; GameState.lastWinnerNotified = null;
+        GameState.ransomRejectCount = 0;
+        this.pickNewWisdom(); botRunning = false;
+      },
+      pickNewWisdom() { GameState.currentWisdom = allWisdom[Math.floor(Math.random() * allWisdom.length)]; },
+      doMove(from, to, remote = false, silent = false) {
+        const t = remote ? (GameState.turn === 'blue' ? 'red' : 'blue') : GameState.turn;
+        if (GameState.board[from] !== t || GameState.board[to] !== null) return;
+        const nb = [...GameState.board];
+        nb[to] = t;
+        nb[from] = null;
+        const victims = GameLogic.capturesAfter(nb, to, t);
+        victims.forEach(v => nb[v] = null);
+        GameState.board = nb;
+        GameState.selected = null;
+        if (victims.length) {
+          if (!silent) { AudioManager.capture(); flash(); shake(); }
+          if (GameLogic.capturesAfter(nb, to, t).length > 0) {
+            GameState.chain = to;
+            if (!silent) AudioManager.chainCap();
+          } else {
+            GameState.chain = null;
+            GameState.turn = t === 'blue' ? 'red' : 'blue';
+          }
+        } else {
+          GameState.chain = null;
+          GameState.turn = t === 'blue' ? 'red' : 'blue';
+          if (!silent) AudioManager.move();
+        }
+        if (!silent) {
+          // NEW: إرسال الحركة عبر البلوتوث أو الأونلاين
+          if (GameState.room === 'bluetooth' && !remote) {
+            BluetoothManager.send({ move: { from, to } });
+          } else if (GameState.room && !remote) {
+            sync();
+          }
+          this.winCheck(); UI.render();
+        }
+      },
+      winCheck() {
+        const blue = GameState.board.filter(x => x === 'blue').length;
+        const red = GameState.board.filter(x => x === 'red').length;
+        const prev = GameState.winner;
+        if (blue <= 1 && red > 1) GameState.winner = 'red';
+        else if (red <= 1 && blue > 1) GameState.winner = 'blue';
+        else if (!GameLogic.hasAnyMove(GameState.board, GameState.turn) && !GameState.chain) {
+          if (GameLogic.allCapturingMovesForBoard(GameState.board, GameState.turn).length === 0)
+            GameState.winner = GameState.turn;
+        }
+        if (GameState.winner && GameState.winner !== prev && GameState.winner !== GameState.lastWinnerNotified) {
+          GameState.lastWinnerNotified = GameState.winner;
+          GameState.wins[GameState.winner] = (GameState.wins[GameState.winner] || 0) + 1;
+          setTimeout(() => { AudioManager.win(); celebrate(GameState.winner); showWinnerModal(GameState.winner); }, 300);
+        }
+      },
+      initRansom() {
+        if (GameState.phase !== 'battle' || GameState.winner || GameState.ransom || GameState.chain) return;
+        GameState.ransom = { step: 0, sacrificePiece: null, enemySelected: [], playerColor: 'red', oppColor: 'blue' };
+        showToast("🔴 اختر قطعة من لونك للتضحية (أبو اثنين)");
+        AudioManager.ransom();
+        // NEW: إرسال الفدية للطرف الآخر (اختياري)
+        if (GameState.room === 'bluetooth') sendBluetoothSync();
+        UI.render();
+      },
+      rejectRansom() {
+        if (!GameState.ransom || GameState.ransom.step !== 1) return;
+        GameState.ransomRejectCount++;
+        if (GameState.ransomRejectCount >= 3) {
+          showToast("⛔ تم رفض الفدية مرتين، سيتم الإجبار الآن!");
+          const oppColor = GameState.ransom.oppColor;
+          const oppPieces = [];
+          for (let i=0; i<TOTAL; i++) if (GameState.board[i] === oppColor) oppPieces.push(i);
+          const selected = oppPieces.slice(0, 2);
+          const nb = [...GameState.board];
+          nb[GameState.ransom.sacrificePiece] = null;
+          selected.forEach(e => nb[e] = null);
+          GameState.board = nb;
+          GameState.ransom = null;
+          GameState.ransomRejectCount = 0;
+          GameState.turn = 'red';
+          showToast("💰 تمت الفدية جبراً! استمر باللعب");
+          AudioManager.ransom();
+          if (GameState.room === 'bluetooth') sendBluetoothSync();
+          UI.render();
+        } else {
+          GameState.ransom.step = 0;
+          GameState.ransom.enemySelected = [];
+          showToast(`🚫 تم الرفض (${GameState.ransomRejectCount}/2)، اختر قطعة أخرى للتضحية`);
+          UI.render();
+        }
+      },
+      handleClick(i, cx, cy) {
+        if (GameState.winner || GameState.listenOnly) return;
+        if (GameState.ransom) { this.ransomClick(i); return; }
+        if (GameState.room && GameState.turn !== GameState.myColor && GameState.room !== 'bluetooth') return showToast("⏳ ليس دورك الآن");
+        // في وضع البلوتوث، السماح بالنقر فقط للونك
+        if (GameState.room === 'bluetooth' && GameState.turn !== GameState.myColor) return showToast("⏳ انتظر دورك");
+        UI.spawnParticles(cx, cy, GameState.turn === 'blue' ? '#00d9ff' : '#ff3d3d');
+        if (GameState.phase === 'placing') {
+          if (i === CENTER) return showToast("⛔ الخيمة محجوزة حتى نهاية التوزيع");
+          if (GameState.board[i] || GameState.inHand[GameState.turn] <= 0) return;
+          GameState.board[i] = GameState.turn;
+          GameState.inHand[GameState.turn]--;
+          GameState.placCount++;
+          AudioManager.place();
+          if (GameState.room === 'bluetooth') sendBluetoothSync();
+          else sync();
+          UI.render();
+          if (GameState.placCount >= 2 || GameState.inHand[GameState.turn] === 0) {
+            GameState.placCount = 0;
+            if (GameState.inHand.blue === 0 && GameState.inHand.red === 0) {
+              GameState.phase = 'battle';
+              GameState.turn = GameState.startFirst;
+              showToast("⚔️ انتهى التوزيع! ابدأ المعركة");
+            } else {
+              GameState.turn = GameState.turn === 'blue' ? 'red' : 'blue';
+              showToast(`➡️ دور ${S(GameState.players[GameState.turn])} - ضع قطعتين`);
+            }
+            if (GameState.room === 'bluetooth') sendBluetoothSync();
+            else sync();
+          }
+          UI.render(); return;
+        }
+        // مرحلة القتال
+        if (GameState.chain !== null) {
+          const chainMoves = GameLogic.allCapturingMovesForBoard(GameState.board, GameState.turn).filter(m => m.from === GameState.chain);
+          const move = chainMoves.find(m => m.to === i);
+          if (move) this.doMove(move.from, move.to);
+          else showToast("🍖 أكمل سلسلة الأكل بنفس الكلب!");
+          return;
+        }
+        const capturingPieces = GameLogic.piecesWithCaptures(GameState.board, GameState.turn);
+        if (GameState.board[i] === GameState.turn) {
+          GameState.selected = i; UI.render(); return;
+        }
+        if (GameState.selected !== null && GameState.board[i] === null) {
+          if (!getNeighbors(GameState.selected).includes(i)) return showToast("🔗 الحركة فقط للخانات المجاورة");
+          if (GameState.nahamActive) {
+            const capMoves = GameLogic.allCapturingMovesForBoard(GameState.board, GameState.turn).filter(m => m.from === GameState.selected);
+            if (capMoves.length > 0) {
+              const move = capMoves.find(m => m.to === i);
+              if (move) { this.doMove(move.from, move.to); return; }
+              showToast("⚡ النهم! هذه القطعة يجب أن تأكل");
+              return;
+            }
+          }
+          this.doMove(GameState.selected, i); return;
+        }
+        if (!GameState.board[i] && GameState.selected === null) showToast("👆 اختر قطعة أولاً");
+      },
+      ransomClick(i) {
+        const r = GameState.ransom; if (!r) return;
+        if (r.step === 0) {
+          if (GameState.board[i] === r.playerColor) {
+            r.sacrificePiece = i; r.step = 1;
+            showToast("✅ الآن اختر قطعتين من الخصم للإزالة");
+            AudioManager.place();
+            UI.render();
+          } else { showToast("❌ اختر قطعة من لونك فقط"); AudioManager.error(); }
+        } else if (r.step === 1) {
+          if (GameState.board[i] === r.oppColor && !r.enemySelected.includes(i)) {
+            r.enemySelected.push(i);
+            if (r.enemySelected.length === 2) {
+              const nb = [...GameState.board];
+              nb[r.sacrificePiece] = null;
+              r.enemySelected.forEach(e => nb[e] = null);
+              GameState.board = nb;
+              GameState.ransom = null;
+              GameState.ransomRejectCount = 0;
+              GameState.turn = r.playerColor;
+              showToast("💰 تمت الفدية! استمر باللعب");
+              AudioManager.ransom();
+              if (GameState.room === 'bluetooth') sendBluetoothSync();
+              else sync();
+              UI.render();
+            } else {
+              showToast(`🎯 اختر القطعة الثانية (${r.enemySelected.length}/2)`);
+              UI.render();
+            }
+          } else { showToast("❌ اختر قطعة خصم صالحة"); AudioManager.error(); }
+        }
+      },
+      botMove() {
+        if (botRunning || GameState.winner) return;
+        botRunning = true;
+        const statusEl = document.getElementById('statusBar');
+        if (statusEl) statusEl.innerHTML += ' <span class="bot-thinking">⚙️ الخصم يخطط...</span>';
+        setTimeout(() => {
+          try {
+            if (GameState.phase === 'placing') {
+              for (let step = 0; step < 2; step++) {
+                if (GameState.inHand.red <= 0 || GameState.phase !== 'placing') break;
+                const empty = [];
+                for (let i=0; i<TOTAL; i++) if (i !== CENTER && !GameState.board[i]) empty.push(i);
+                if (empty.length === 0) break;
+                const corners = empty.filter(i => { const {r,c} = getRC(i); return (r===0||r===6) && (c===0||c===6); });
+                const pick = corners.length ? corners[Math.floor(Math.random()*corners.length)] : empty[Math.floor(Math.random()*empty.length)];
+                GameState.board[pick] = 'red'; GameState.inHand.red--; GameState.placCount++;
+                AudioManager.place(); sync(); UI.render();
+              }
+              GameState.placCount = 0;
+              if (GameState.inHand.blue === 0 && GameState.inHand.red === 0) {
+                GameState.phase = 'battle';
+                GameState.turn = GameState.startFirst;
+              } else {
+                GameState.turn = 'blue';
+              }
+              sync(); UI.render();
+            } else {
+              let moves = GameLogic.allCapturingMovesForBoard(GameState.board, 'red');
+              if (!moves.length) {
+                moves = [];
+                for (let i=0; i<TOTAL; i++) if (GameState.board[i] === 'red')
+                  for (const n of getNeighbors(i)) if (!GameState.board[n]) moves.push({from: i, to: n});
+              }
+              if (!moves.length) { GameState.winner = 'blue'; UI.render(); return; }
+              let best = null, bestVal = -Infinity;
+              for (const m of moves) {
+                const nb = [...GameState.board]; nb[m.to] = 'red'; nb[m.from] = null;
+                const vics = GameLogic.capturesAfter(nb, m.to, 'red'); vics.forEach(v => nb[v] = null);
+                const nextTurn = GameLogic.capturesAfter(nb, m.to, 'red').length ? GameState.turn : (GameState.turn === 'blue' ? 'red' : 'blue');
+                const val = GameLogic.minimax(nb, 5, false, -Infinity, Infinity, nextTurn);
+                if (val > bestVal) { bestVal = val; best = m; }
+              }
+              if (best) this.doMove(best.from, best.to);
+            }
+          } finally {
+            botRunning = false;
+            UI.updateStatusBar();
+          }
+        }, 1200);
+      },
+      scheduleBot() {
+        clearTimeout(botTimer);
+        if (!GameState.winner && GameState.turn === 'red' && !GameState.room && !GameState.ransom && !GameState.listenOnly && !botRunning) {
+          botTimer = setTimeout(() => this.botMove(), 100);
+        }
+      },
+      backToStart() {
+        if (channel) try { channel.unsubscribe(); } catch(e) {}
+        // NEW: فصل البلوتوث
+        BluetoothManager.disconnect();
+        GameState.screen='start'; GameState.community=false; GameState.room=''; GameState.connected=false;
+        GameState.listenOnly=false; GameState.myColor='blue'; GameState.chatMinimized=true;
+        GameState.radioPanelVisible=false; clearTimeout(botTimer); UI.render();
+      }
+    };
+
+    // ==================== NEW: مدير البلوتوث ====================
+    const BluetoothManager = {
+      device: null,
+      server: null,
+      service: null,
+      txCharacteristic: null,
+      rxCharacteristic: null,
+      connected: false,
+      SERVICE_UUID: '12345678-1234-1234-1234-123456789abc',
+      TX_UUID: '12345678-1234-1234-1234-123456789abd',
+      RX_UUID: '12345678-1234-1234-1234-123456789abe',
+
+      async connectAsHost() {
+        try {
+          showToast("📡 جارٍ الإعداد كمضيف... تأكد من أن الجهاز الآخر يبحث عن أجهزة Bluetooth.");
+          // للمضيف: نحتاج أن نجعله قابلاً للاكتشاف، وهذا يتطلب تفعيل العلم التجريبي أو استخدام تطبيق خارجي.
+          // هنا نستخدم طريقة بديلة: نطلب من المستخدم أن يؤكد أنه قام بإعداد الجهاز كـ Peripheral.
+          if (!confirm("لتفعيل وضع المضيف، يجب أن يكون جهازك قابلاً للاكتشاف عبر البلوتوث.\n\nتأكد من أنك فعّلت الميزة التجريبية:\nchrome://flags/#enable-experimental-web-platform-features\n\nأو استخدم تطبيق خارجي لمحاكاة الخدمة.\n\nاضغط موافق للمتابعة.")) {
+            return false;
+          }
+          // للأسف، لا يمكن إنشاء GATT Server من المتصفح، لذا سنحاول استخدام طريقة وهمية للسماح للضيف بالاتصال.
+          // ننتظر حتى يطلب الضيف الاتصال بجهازنا (سنعرض UUID الخدمة).
+          showToast("📋 انسخ UUID الخدمة: " + this.SERVICE_UUID + " وأعطه للضيف ليبحث عن جهازك.");
+          // محاكاة: ننتظر الاتصال الوارد (في الواقع، الضيف هو من سيبحث عن جهاز يحمل هذه الخدمة).
+          // بما أن المتصفح لا يمكنه الإعلان، سنحاول تمثيل الاتصال بعد أن يقوم الضيف بالاتصال بجهاز وهمي.
+          // بدلاً من ذلك، نعيد توجيه المستخدم إلى وضع الضيف تلقائياً أو نعتمد على أن كلا الجهازين سيتصلان بجهاز وسيط.
+          // لكننا سنبقي الكود ليكون متوافقاً مع المستقبل عند دعم Peripheral.
+          // في الوقت الحالي، نعرض تعليمات وننتظر.
+          // سنقوم بمحاولة استخدام requestDevice للبحث عن خدمة (وهذا لن يعمل للمضيف).
+          // حل عملي: نجعل المستخدمين يتبادلان الأدوار، أو نستخدم مكتبة Web Bluetooth مع إعداد Peripheral.
+          return false; // نفشل بشكل مؤقت
+        } catch (e) {
+          console.error(e);
+          showToast("❌ فشل إعداد المضيف");
+          return false;
+        }
+      },
+
+      async connectAsGuest() {
+        try {
+          showToast("🔍 جارٍ البحث عن مضيف... انتظر.");
+          const device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [this.SERVICE_UUID] }],
+            optionalServices: [this.SERVICE_UUID]
+          });
+          this.device = device;
+          const gattServer = await device.gatt.connect();
+          this.service = await gattServer.getPrimaryService(this.SERVICE_UUID);
+          this.txCharacteristic = await this.service.getCharacteristic(this.TX_UUID);
+          this.rxCharacteristic = await this.service.getCharacteristic(this.RX_UUID);
+          await this.rxCharacteristic.startNotifications();
+          this.rxCharacteristic.addEventListener('characteristicvaluechanged', this.onDataReceived.bind(this));
+          this.connected = true;
+          showToast("📶 متصل بالمضيف!");
+          return true;
+        } catch (e) {
+          console.error(e);
+          showToast("❌ لم يتم العثور على مضيف. تأكد من أن المضيف يبث الخدمة.");
+          return false;
+        }
+      },
+
+      async send(data) {
+        if (!this.connected || !this.txCharacteristic) return;
+        const encoder = new TextEncoder();
+        try {
+          await this.txCharacteristic.writeValue(encoder.encode(JSON.stringify(data)));
+        } catch (e) {
+          console.warn("Bluetooth send error:", e);
+        }
+      },
+
+      onDataReceived(event) {
+        const decoder = new TextDecoder();
+        const value = decoder.decode(event.target.value);
+        try {
+          const data = JSON.parse(value);
+          // تطبيق الحركة أو الحالة
+          if (data.move) {
+            GameController.doMove(data.move.from, data.move.to, true, true);
+          } else {
+            // تحديث كامل للحالة
+            if (data.board) GameState.board = data.board;
+            if (data.phase) GameState.phase = data.phase;
+            if (data.turn) GameState.turn = data.turn;
+            if (data.inHand) GameState.inHand = data.inHand;
+            if (data.placCount !== undefined) GameState.placCount = data.placCount;
+            if (data.selected) GameState.selected = data.selected;
+            if (data.chain) GameState.chain = data.chain;
+            if (data.winner) GameState.winner = data.winner;
+            if (data.players) GameState.players = data.players;
+            if (data.startFirst) GameState.startFirst = data.startFirst;
+            if (data.ransom) GameState.ransom = data.ransom;
+            if (data.wins) GameState.wins = data.wins;
+            if (data.nahamActive !== undefined) GameState.nahamActive = data.nahamActive;
+            if (data.ransomRejectCount !== undefined) GameState.ransomRejectCount = data.ransomRejectCount;
+          }
+          UI.render();
+        } catch (e) {}
+      },
+
+      disconnect() {
+        this.connected = false;
+        if (this.device && this.device.gatt.connected) this.device.gatt.disconnect();
+        this.device = null;
+        this.service = null;
+        this.txCharacteristic = null;
+        this.rxCharacteristic = null;
+      }
+    };
+
+    // NEW: بدء لعبة البلوتوث
+    async function startBluetoothGame(name1, name2, isHost) {
+      GameState.room = 'bluetooth';
+      GameState.myColor = isHost ? 'blue' : 'red';
+      GameState.players.blue = isHost ? name1 : name2;
+      GameState.players.red = isHost ? name2 : name1;
+      GameState.listenOnly = false;
+      GameState.nahamActive = document.getElementById('nahamToggle')?.checked ?? true;
+      GameState.startFirst = 'blue'; // الأزرق يبدأ دائماً
+
+      GameController.resetGame();
+      GameState.screen = 'game';
+      GameController.pickNewWisdom();
+      UI.render();
+
+      let success = false;
+      if (isHost) {
+        success = await BluetoothManager.connectAsHost();
+        if (!success) {
+          // إذا فشل وضع المضيف، نعرض خيار الضيف تلقائياً
+          showToast("⚠️ لم يتمكن من العمل كمضيف. جاري المحاولة كضيف...");
+          GameState.myColor = 'red';
+          GameState.players.blue = name1;
+          GameState.players.red = name2;
+          UI.render();
+          success = await BluetoothManager.connectAsGuest();
+        }
+      } else {
+        success = await BluetoothManager.connectAsGuest();
+      }
+
+      if (!success) {
+        showToast("⚠️ تعذر الاتصال بالبلوتوث. العودة للقائمة...");
+        setTimeout(() => GameController.backToStart(), 2000);
+        return;
+      }
+
+      // بعد الاتصال، نرسل الحالة من المضيف إلى الضيف
+      if (isHost && BluetoothManager.connected) {
+        sendBluetoothSync();
+      }
+      UI.render();
+    }
+
+    function showWinnerModal(winnerColor) {
+      const ex=document.querySelector('.winner-modal'); if(ex)ex.remove();
+      const d=document.createElement('div'); d.className='winner-modal';
+      d.innerHTML=`<h2>🏆 فاز ${S(GameState.players[winnerColor])}!</h2><p style="color:var(--gold-light);margin:8px 0;">النتيجة: ${GameState.wins.blue} - ${GameState.wins.red}</p><button id="playAgainBtn" style="margin-top:10px;padding:10px 24px;font-size:1rem;">⚔️ مواجهة جديدة</button>`;
+      document.body.appendChild(d);
+      document.getElementById('playAgainBtn').addEventListener('click', ()=>{ d.remove(); GameController.resetGame(); UI.render(); if (GameState.room !== 'bluetooth') sync(); else sendBluetoothSync(); });
+    }
+
+    // ==================== 7. بدء التطبيق ====================
+    GameController.pickNewWisdom();
+    UI.render();
+    document.addEventListener('click', () => AudioManager.getCtx?.(), { once: true });
+  });
+</script>
+</body>
+</html>
